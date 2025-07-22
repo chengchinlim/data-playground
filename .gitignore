@@ -1,0 +1,14 @@
+# IDE files
+.idea/
+
+# Claude Code files
+.claude/
+.mcp.json
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
