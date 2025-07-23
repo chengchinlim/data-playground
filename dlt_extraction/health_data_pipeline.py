@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Dict, Any, Optional
 
 from config.database import DatabaseConfig
-from .postgres_source import postgres_health_data, users_filtered
+from .postgres_source import postgres_health_data, raw_users
 from .pipeline_config import PipelineConfig, get_default_config
 
 
@@ -97,7 +97,7 @@ class HealthDataPipeline:
         print(f"Database: {self.database_config.host}:{self.database_config.port}/{self.database_config.database}")
         
         # Use the filtered users resource
-        source = users_filtered(
+        source = raw_users(
             database_config=self.database_config,
         )
         
@@ -183,7 +183,7 @@ class HealthDataPipeline:
         print("="*50)
         
         # Try to get and display sample data
-        users_df = self.get_extracted_data('users_filtered')
+        users_df = self.get_extracted_data('raw_users')
         if users_df is not None and not users_df.empty:
             print(f"\nExtracted {len(users_df)} users")
             print(f"Columns: {list(users_df.columns)}")

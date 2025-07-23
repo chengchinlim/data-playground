@@ -29,13 +29,13 @@ def postgres_health_data(
             'primary_key': 'id',
             'incremental_key': 'updated_at',
             'columns': ['id', 'first_name', 'last_name', 'email', 'date_of_birth', 
-                       'gender', 'height_cm', 'weight_kg', 'created_at', 'updated_at']
+                       'gender', 'created_at', 'updated_at']
         },
         'medical_checkups': {
             'primary_key': 'id', 
             'incremental_key': 'checkup_date',
             'columns': ['id', 'user_id', 'checkup_date', 'doctor_name', 'notes', 
-                       'created_at', 'updated_at']
+                       'height_cm', 'weight_kg', 'created_at', 'updated_at']
         },
         'blood_pressure_readings': {
             'primary_key': 'id',
@@ -149,22 +149,30 @@ def create_table_resource(
         # Use dlt's sql_database helper for incremental loading
         from dlt.sources.sql_database import sql_table
         
-        yield from sql_table(
-            credentials=connection_string,
-            table=table_name,
-            schema="public",
-            incremental=dlt.sources.incremental(incremental_key) if incremental_key else None
-        )
+        # Use merge for users and health_goals, incremental for others
+        if table_name in ['users', 'health_goals']:
+            yield from sql_table(
+                credentials=connection_string,
+                table=table_name,
+                schema="public"
+            )
+        else:
+            yield from sql_table(
+                credentials=connection_string,
+                table=table_name,
+                schema="public",
+                incremental=dlt.sources.incremental(incremental_key) if incremental_key else None
+            )
     
     return table_resource
 
 
 @dlt.resource
-def users_filtered(
+def raw_users(
     database_config: DatabaseConfig,
 ) -> Iterator[Dict[str, Any]]:
     """
-    Filtered users resource matching the original extraction logic.
+    Raw users resource matching the original extraction logic.
     
     Args:
         database_config: Database configuration
@@ -178,10 +186,9 @@ def users_filtered(
     
     from dlt.sources.sql_database import sql_table
     
-    # Create incremental loading on updated_at
+    # Use merge loading for users
     yield from sql_table(
         credentials=connection_string,
         table="users",
-        schema="public",
-        incremental=dlt.sources.incremental("updated_at")
+        schema="public"
     )
