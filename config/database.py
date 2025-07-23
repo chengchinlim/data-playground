@@ -11,6 +11,11 @@ class DatabaseConfig:
     username: str = "postgres"
     password: str = ""
     
+    # Add property alias for backward compatibility with dlt
+    @property
+    def user(self) -> str:
+        return self.username
+    
     @classmethod
     def from_env(cls):
         # Get the project root directory (parent of config directory)
@@ -33,6 +38,24 @@ class DatabaseConfig:
             username=env_vars.get("DB_USER", "postgres"),
             password=env_vars.get("DB_PASSWORD", "")
         )
+    
+    def __init__(self, host=None, port=None, database=None, username=None, password=None):
+        """Initialize DatabaseConfig, using from_env() if no parameters provided."""
+        if all(param is None for param in [host, port, database, username, password]):
+            # If no parameters provided, load from environment
+            env_config = self.from_env()
+            self.host = env_config.host
+            self.port = env_config.port
+            self.database = env_config.database
+            self.username = env_config.username
+            self.password = env_config.password
+        else:
+            # Use provided parameters or defaults
+            self.host = host or "localhost"
+            self.port = port or 5432
+            self.database = database or "postgres"
+            self.username = username or "postgres"
+            self.password = password or ""
     
     def connection_string(self):
         return f"postgresql://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
