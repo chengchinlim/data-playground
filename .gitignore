@@ -12,3 +12,6 @@
 .env.test
 .env.production
 *.env
+
+# Data files
+data/
