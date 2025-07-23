@@ -1,5 +1,5 @@
-# data-playground
-
 ## Data Pipeline Architecture
 
-PostgreSQL (source) → dlt → Dagster → DuckDB (staging) → dbt → DuckDB (analytics)
+PostgreSQL (source) → dlt → DuckDB (staging) → dbt → DuckDB (analytics)
+
+Dagster for orchestration
