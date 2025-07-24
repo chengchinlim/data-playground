@@ -6,7 +6,7 @@ from .health_data_pipeline import (
     run_full_extraction,
     export_to_files
 )
-from .postgres_source import postgres_health_data, raw_users
+from .postgres_source import postgres_health_data, raw_customers
 from .pipeline_config import PipelineConfig, get_default_config
 
 __all__ = [

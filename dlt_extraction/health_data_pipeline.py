@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Dict, Any, Optional
 
 from config.database import DatabaseConfig
-from .postgres_source import postgres_health_data, raw_users
+from .postgres_source import postgres_health_data, raw_customers
 from .pipeline_config import PipelineConfig, get_default_config
 
 
@@ -87,32 +87,32 @@ class HealthDataPipeline:
             'tables_extracted': self.config.tables_to_extract or 'all'
         }
     
-    def run_users_extraction(self) -> Dict[str, Any]:
+    def run_customers_extraction(self) -> Dict[str, Any]:
         """
-        Run extraction for users table only (matching original logic).
+        Run extraction for customers table only (matching original logic).
         
         Returns:
             Dictionary containing extraction results
         """
         pipeline = self.create_pipeline()
         
-        print("Extracting users table (matching original extraction logic)...")
+        print("Extracting customers table (matching original extraction logic)...")
         print(f"Database: {self.database_config.host}:{self.database_config.port}/{self.database_config.database}")
         
-        # Use the filtered users resource
-        source = raw_users(
+        # Use the filtered customers resource
+        source = raw_customers(
             database_config=self.database_config,
         )
         
         load_info = pipeline.run(source)
         
         # Display results similar to original extraction
-        self._display_users_results(load_info)
+        self._display_customers_results(load_info)
         
         return {
             'load_info': load_info,
             'pipeline_name': pipeline.pipeline_name,
-            'table': 'users'
+            'table': 'customers'
         }
     
     def get_extracted_data(self, table_name: str) -> Optional[pd.DataFrame]:
@@ -216,22 +216,22 @@ class HealthDataPipeline:
         if show_progress and self.config.destination == "duckdb":
             self._show_sample_data()
     
-    def _display_users_results(self, load_info):
-        """Display results for users extraction (matching original format)."""
+    def _display_customers_results(self, load_info):
+        """Display results for customers extraction (matching original format)."""
         print("\n" + "="*50)
-        print("USERS TABLE EXTRACTION")
+        print("CUSTOMERS TABLE EXTRACTION")
         print("="*50)
         
         # Try to get and display sample data
-        users_df = self.get_extracted_data('raw_users')
-        if users_df is not None and not users_df.empty:
-            print(f"\nExtracted {len(users_df)} users")
-            print(f"Columns: {list(users_df.columns)}")
+        customers_df = self.get_extracted_data('raw_customers')
+        if customers_df is not None and not customers_df.empty:
+            print(f"\nExtracted {len(customers_df)} customers")
+            print(f"Columns: {list(customers_df.columns)}")
             
             print("\nFirst 5 rows:")
-            print(users_df.head().to_string(index=False))
+            print(customers_df.head().to_string(index=False))
             
-            print(f"\nDataset shape: {users_df.shape}")
+            print(f"\nDataset shape: {customers_df.shape}")
         else:
             print("No data extracted or unable to retrieve data")
     
@@ -276,7 +276,7 @@ class HealthDataPipeline:
 def run_basic_extraction():
     """Run basic extraction similar to the original extraction logic."""
     pipeline = HealthDataPipeline()
-    return pipeline.run_users_extraction()
+    return pipeline.run_customers_extraction()
 
 
 def run_full_extraction():
