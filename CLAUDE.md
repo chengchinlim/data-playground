@@ -14,10 +14,10 @@ The project uses PostgreSQL with configuration managed through the `DatabaseConf
 
 ```bash
 # Main data extraction script
-python scripts/main.py
+python3 scripts/main.py
 
 # Alternative execution from project root
-python -m scripts.main
+python3 -m scripts.main
 ```
 
 ## Project Architecture
