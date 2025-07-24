@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Dict, Any, Optional
 
 from config.database import DatabaseConfig
-from .postgres_source import postgres_health_data, raw_customers
+from .postgres_source import postgres_health_data
 from .pipeline_config import PipelineConfig, get_default_config
 
 
@@ -85,34 +85,6 @@ class HealthDataPipeline:
             'pipeline_name': pipeline.pipeline_name,
             'destination': self.config.destination,
             'tables_extracted': self.config.tables_to_extract or 'all'
-        }
-    
-    def run_customers_extraction(self) -> Dict[str, Any]:
-        """
-        Run extraction for customers table only (matching original logic).
-        
-        Returns:
-            Dictionary containing extraction results
-        """
-        pipeline = self.create_pipeline()
-        
-        print("Extracting customers table (matching original extraction logic)...")
-        print(f"Database: {self.database_config.host}:{self.database_config.port}/{self.database_config.database}")
-        
-        # Use the filtered customers resource
-        source = raw_customers(
-            database_config=self.database_config,
-        )
-        
-        load_info = pipeline.run(source)
-        
-        # Display results similar to original extraction
-        self._display_customers_results(load_info)
-        
-        return {
-            'load_info': load_info,
-            'pipeline_name': pipeline.pipeline_name,
-            'table': 'customers'
         }
     
     def get_extracted_data(self, table_name: str) -> Optional[pd.DataFrame]:
@@ -216,25 +188,6 @@ class HealthDataPipeline:
         if show_progress and self.config.destination == "duckdb":
             self._show_sample_data()
     
-    def _display_customers_results(self, load_info):
-        """Display results for customers extraction (matching original format)."""
-        print("\n" + "="*50)
-        print("CUSTOMERS TABLE EXTRACTION")
-        print("="*50)
-        
-        # Try to get and display sample data
-        customers_df = self.get_extracted_data('raw_customers')
-        if customers_df is not None and not customers_df.empty:
-            print(f"\nExtracted {len(customers_df)} customers")
-            print(f"Columns: {list(customers_df.columns)}")
-            
-            print("\nFirst 5 rows:")
-            print(customers_df.head().to_string(index=False))
-            
-            print(f"\nDataset shape: {customers_df.shape}")
-        else:
-            print("No data extracted or unable to retrieve data")
-    
     def _show_sample_data(self):
         """Show sample data from extracted tables."""
         if self.pipeline is None:
@@ -273,11 +226,6 @@ class HealthDataPipeline:
             print(f"Error displaying sample data: {e}")
 
 
-def run_basic_extraction():
-    """Run basic extraction similar to the original extraction logic."""
-    pipeline = HealthDataPipeline()
-    return pipeline.run_customers_extraction()
-
 
 def run_full_extraction():
     """Run full extraction of all health tracking tables."""
@@ -297,5 +245,5 @@ def export_to_files(output_dir: str = "./health_data_export"):
 
 
 if __name__ == "__main__":
-    # Run basic extraction by default
-    run_basic_extraction()
+    # Run full extraction by default
+    run_full_extraction()

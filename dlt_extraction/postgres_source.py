@@ -1,10 +1,13 @@
 """PostgreSQL data source for dlt extraction - Fixed Version."""
 
+from typing import Dict, Optional, List
+
 import dlt
-from typing import Iterator, Dict, Any, Optional, List
 from dlt.sources import DltResource
-from dlt.sources.sql_database import sql_database, sql_table
+from dlt.sources.sql_database import sql_table
+
 from config.database import DatabaseConfig
+
 
 @dlt.source
 def postgres_health_data(
@@ -114,22 +117,3 @@ def postgres_health_data(
     return resources
 
 
-@dlt.resource
-def raw_customers(database_config: DatabaseConfig) -> Iterator[Dict[str, Any]]:
-    """
-    Raw customers resource matching the original extraction logic.
-
-    Args:
-        database_config: Database configuration
-
-    Yields:
-        Customer records as dictionaries
-    """
-    connection_string = database_config.connection_string()
-
-    # Use dlt's sql_table for robust extraction
-    yield from sql_table(
-        credentials=connection_string,
-        table="customers",
-        schema="public"
-    )

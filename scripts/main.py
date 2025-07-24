@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from dlt_extraction import run_basic_extraction, run_full_extraction, export_to_files
+from dlt_extraction import run_full_extraction, export_to_files
 
 
 def main():
@@ -14,21 +14,11 @@ def main():
     
     This replaces the old extraction logic with dlt-based extraction.
     Available options:
-    - Basic extraction (users table only) - matches original behavior
     - Full extraction (all health tracking tables)
     - Export to files
     """
     print("Health Data Extraction using dlt")
     print("=" * 40)
-    
-    # Option 1: Run basic extraction (matches original extraction logic)
-    # print("\n🔄 Running basic extraction (users table only)...")
-    # try:
-    #     result = run_basic_extraction()
-    #     print("✅ Basic extraction completed successfully")
-    # except Exception as e:
-    #     print(f"❌ Basic extraction failed: {e}")
-    #     return
     
     # Option 2: Uncomment to run full extraction of all tables
     print("\n🔄 Running full extraction (all health tables)...")

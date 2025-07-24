@@ -2,20 +2,17 @@
 
 from .health_data_pipeline import (
     HealthDataPipeline,
-    run_basic_extraction,
     run_full_extraction,
     export_to_files
 )
-from .postgres_source import postgres_health_data, raw_customers
+from .postgres_source import postgres_health_data
 from .pipeline_config import PipelineConfig, get_default_config
 
 __all__ = [
     'HealthDataPipeline',
-    'run_basic_extraction', 
     'run_full_extraction',
     'export_to_files',
     'postgres_health_data',
-    'raw_customers',
     'PipelineConfig',
     'get_default_config'
 ]
