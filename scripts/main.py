@@ -22,21 +22,21 @@ def main():
     print("=" * 40)
     
     # Option 1: Run basic extraction (matches original extraction logic)
-    print("\n🔄 Running basic extraction (users table only)...")
-    try:
-        result = run_basic_extraction()
-        print("✅ Basic extraction completed successfully")
-    except Exception as e:
-        print(f"❌ Basic extraction failed: {e}")
-        return
+    # print("\n🔄 Running basic extraction (users table only)...")
+    # try:
+    #     result = run_basic_extraction()
+    #     print("✅ Basic extraction completed successfully")
+    # except Exception as e:
+    #     print(f"❌ Basic extraction failed: {e}")
+    #     return
     
     # Option 2: Uncomment to run full extraction of all tables
-    # print("\n🔄 Running full extraction (all health tables)...")
-    # try:
-    #     result = run_full_extraction()
-    #     print("✅ Full extraction completed successfully")
-    # except Exception as e:
-    #     print(f"❌ Full extraction failed: {e}")
+    print("\n🔄 Running full extraction (all health tables)...")
+    try:
+        result = run_full_extraction()
+        print("✅ Full extraction completed successfully")
+    except Exception as e:
+        print(f"❌ Full extraction failed: {e}")
     
     # Option 3: Uncomment to export data to files
     # print("\n🔄 Exporting data to files...")

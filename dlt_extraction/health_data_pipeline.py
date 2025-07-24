@@ -56,11 +56,14 @@ class HealthDataPipeline:
         print(f"Starting health data extraction pipeline: {self.config.pipeline_name}")
         print(f"Database: {self.database_config.host}:{self.database_config.port}/{self.database_config.database}")
         print(f"Destination: {self.config.destination}")
-        
+
         # Get the data source
         source = postgres_health_data(
             database_config=self.database_config,
-            table_names=self.config.tables_to_extract
+            table_names=self.config.tables_to_extract,
+            table_limits=self.config.table_limits,
+            table_filters=self.config.table_filters,
+            table_ordering=self.config.table_ordering
         )
         
         # Run the pipeline
@@ -155,23 +158,60 @@ class HealthDataPipeline:
         print("EXTRACTION RESULTS")
         print("="*50)
         
-        print(f"Pipeline: {load_info.pipeline.pipeline_name}")
-        print(f"Load ID: {load_info.load_id}")
-        print(f"Destination: {load_info.destination_name}")
+        # Safely access LoadInfo attributes
+        pipeline_name = 'Unknown'
+        if hasattr(load_info, 'pipeline') and load_info.pipeline:
+            if hasattr(load_info.pipeline, 'pipeline_name'):
+                pipeline_name = load_info.pipeline.pipeline_name
+            elif hasattr(load_info.pipeline, 'name'):
+                pipeline_name = load_info.pipeline.name
         
-        if load_info.has_failed_jobs:
+        print(f"Pipeline: {pipeline_name}")
+        
+        # Load ID might not exist in all dlt versions
+        if hasattr(load_info, 'load_id'):
+            print(f"Load ID: {load_info.load_id}")
+        elif hasattr(load_info, 'loads_ids') and load_info.loads_ids:
+            print(f"Load IDs: {', '.join(load_info.loads_ids)}")
+        
+        # Destination name
+        if hasattr(load_info, 'destination_name'):
+            print(f"Destination: {load_info.destination_name}")
+        elif hasattr(load_info, 'destination_type'):
+            print(f"Destination: {load_info.destination_type}")
+        
+        # Check for failed jobs
+        if hasattr(load_info, 'has_failed_jobs') and load_info.has_failed_jobs:
             print("❌ Some jobs failed:")
-            for job in load_info.failed_jobs:
-                print(f"  - {job.job_file_info.table_name}: {job.exception}")
+            if hasattr(load_info, 'failed_jobs'):
+                for job in load_info.failed_jobs:
+                    table_name = getattr(job, 'table_name', 'Unknown table')
+                    if hasattr(job, 'job_file_info') and hasattr(job.job_file_info, 'table_name'):
+                        table_name = job.job_file_info.table_name
+                    exception = getattr(job, 'exception', 'Unknown error')
+                    print(f"  - {table_name}: {exception}")
         else:
             print("✅ All jobs completed successfully")
         
-        # Display table statistics
-        print(f"\nTables processed: {len(load_info.loaded_packages[0].schema_updates)}")
-        for package in load_info.loaded_packages:
-            for table_name, metrics in package.load_metrics.items():
-                if hasattr(metrics, 'items_count'):
-                    print(f"  - {table_name}: {metrics.items_count} rows")
+        # Display table statistics if available
+        if hasattr(load_info, 'loaded_packages') and load_info.loaded_packages:
+            try:
+                packages = load_info.loaded_packages
+                if packages and len(packages) > 0:
+                    first_package = packages[0]
+                    if hasattr(first_package, 'schema_updates'):
+                        print(f"\nTables processed: {len(first_package.schema_updates)}")
+                    
+                    # Try to display load metrics
+                    for package in packages:
+                        if hasattr(package, 'load_metrics'):
+                            for table_name, metrics in package.load_metrics.items():
+                                if hasattr(metrics, 'items_count'):
+                                    print(f"  - {table_name}: {metrics.items_count} rows")
+                                elif hasattr(metrics, 'rows_count'):
+                                    print(f"  - {table_name}: {metrics.rows_count} rows")
+            except (AttributeError, IndexError) as e:
+                print(f"Could not retrieve detailed statistics: {e}")
         
         if show_progress and self.config.destination == "duckdb":
             self._show_sample_data()

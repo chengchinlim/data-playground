@@ -60,10 +60,10 @@ class PipelineConfig:
             self.table_ordering = {
                 'users': 'created_at DESC',
                 'medical_checkups': 'checkup_date DESC',
-                'blood_pressure_readings': 'measurement_time DESC',
-                'blood_sugar_readings': 'measurement_time DESC', 
-                'cholesterol_readings': 'measurement_time DESC',
-                'sodium_readings': 'measurement_time DESC',
+                'blood_pressure_readings': 'created_at DESC',
+                'blood_sugar_readings': 'created_at DESC',
+                'cholesterol_readings': 'created_at DESC',
+                'sodium_readings': 'created_at DESC',
                 'medications': 'start_date DESC',
                 'health_goals': 'created_at DESC'
             }
