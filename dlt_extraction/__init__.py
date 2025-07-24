@@ -15,7 +15,7 @@ __all__ = [
     'run_full_extraction',
     'export_to_files',
     'postgres_health_data',
-    'raw_users',
+    'raw_customers',
     'PipelineConfig',
     'get_default_config'
 ]
