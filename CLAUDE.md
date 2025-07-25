@@ -8,7 +8,7 @@ The project uses PostgreSQL with configuration managed through the `DatabaseConf
 
 - Database connection parameters are loaded from `.env.local` file (not tracked in git)
 - Environment variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-- Defaults to localhost:5432 with postgres/postgres credentials if no env file exists
+- Defaults to localhost:5433 with postgres/postgres credentials if no env file exists
 
 ## Running the Application  
 
@@ -18,6 +18,10 @@ python3 scripts/main.py
 
 # Alternative execution from project root
 python3 -m scripts.main
+```
+### Download Dependencies
+```bash
+pip3 install -r requirements.txt
 ```
 
 ## Project Architecture
@@ -67,6 +71,55 @@ The pipeline extracts from these health tracking tables:
 - **`HealthDataPipeline`**: Main pipeline orchestration with configurable destinations
 - **`PipelineConfig`**: Pipeline configuration including extraction parameters and output settings
 - **`PostgresSource`**: dlt-compatible data sources with incremental loading capabilities
+
+## dbt Staging Layer
+
+The project includes a comprehensive dbt staging layer in `dbt_health_data/` that transforms raw dlt data into clean, typed staging tables.
+
+### dbt Commands
+
+```bash
+# Navigate to dbt project directory
+cd dbt_health_data
+
+# Install dbt packages
+dbt deps
+
+# Run all staging models
+dbt run
+
+# Run tests
+dbt test
+
+# Run specific model
+dbt run --models stg_customers
+
+# Test specific model
+dbt test --models stg_customers
+
+# Generate and serve documentation
+dbt docs generate
+dbt docs serve
+
+# Debug connection
+dbt debug
+```
+
+### Staging Models
+
+- **`stg_customers`**: Customer demographics with age calculations and categorization
+- **`stg_medical_checkups`**: Medical records with BMI calculations and health risk assessment
+- **`stg_blood_pressure_readings`**: BP measurements with AHA guideline categorization
+- **`stg_blood_sugar_readings`**: Glucose readings with diabetes risk indicators
+- **`stg_cholesterol_readings`**: Lipid panels with cardiovascular risk assessment
+- **`stg_sodium_readings`**: Sodium levels with clinical significance indicators
+
+Each model includes:
+- Data cleaning and type casting
+- Clinical categorization based on medical guidelines
+- Risk level assessments
+- Data quality flags
+- Comprehensive testing
 
 ### MCP Integration
 

@@ -15,3 +15,10 @@
 
 # Data files
 data/
+
+# dbt files
+dbt_health_data/logs/
+dbt_health_data/target/
+dbt_health_data/dbt_packages/
+dbt_health_data/package-lock.yml
+dbt_health_data/.user.yml

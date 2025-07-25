@@ -1,0 +1,293 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Cleaned and transformed customer demographic data with calculated age metrics
+    columns:
+      - name: customer_id
+        description: Unique identifier for each customer
+        tests:
+          - not_null
+          - unique
+      - name: first_name
+        description: Customer's first name (trimmed)
+        tests:
+          - not_null
+      - name: last_name
+        description: Customer's last name (trimmed)
+        tests:
+          - not_null
+      - name: email
+        description: Customer's email address (lowercase, trimmed)
+        tests:
+          - not_null
+          - unique
+      - name: date_of_birth
+        description: Customer's date of birth
+        tests:
+          - not_null
+      - name: gender
+        description: Customer's gender
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Male', 'Female', 'Other', 'Prefer not to say']
+      - name: age_years
+        description: Calculated age in years as of current date
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 150
+      - name: age_group
+        description: Age categorization (Minor, Young Adult, Middle Age, Pre-Senior, Senior)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Minor', 'Young Adult', 'Middle Age', 'Pre-Senior', 'Senior', 'Unknown']
+
+  - name: stg_medical_checkups
+    description: Medical checkup records with calculated BMI and health risk indicators
+    columns:
+      - name: checkup_id
+        description: Unique identifier for each medical checkup
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: Foreign key to customers table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: bmi
+        description: Calculated Body Mass Index (weight_kg / height_m²)
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 10
+              max_value: 80
+      - name: bmi_category
+        description: BMI classification (Underweight, Normal weight, Overweight, Obesity Class I-III)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Underweight', 'Normal weight', 'Overweight', 'Obesity Class I', 'Obesity Class II', 'Obesity Class III', 'Unknown']
+      - name: health_risk_level
+        description: Health risk assessment based on BMI
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Moderate', 'High', 'Unknown']
+      - name: height_cm
+        description: Patient height in centimeters
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 50
+              max_value: 250
+      - name: weight_kg
+        description: Patient weight in kilograms
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 10
+              max_value: 500
+
+  - name: stg_blood_pressure_readings
+    description: Blood pressure measurements with clinical categorization and risk assessment
+    columns:
+      - name: reading_id
+        description: Unique identifier for each blood pressure reading
+        tests:
+          - not_null
+          - unique
+      - name: checkup_id
+        description: Foreign key to medical_checkups table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_medical_checkups')
+              field: checkup_id
+      - name: bp_category
+        description: Blood pressure category per American Heart Association guidelines
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Normal', 'Elevated', 'High Blood Pressure Stage 1', 'High Blood Pressure Stage 2', 'Hypertensive Crisis', 'Unknown']
+      - name: bp_risk_level
+        description: Risk level based on blood pressure readings
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Low-Moderate', 'Moderate', 'High', 'Critical', 'Unknown']
+      - name: heart_rate_category
+        description: Heart rate categorization (Bradycardia, Normal, Tachycardia)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Bradycardia', 'Normal', 'Tachycardia', 'Unknown']
+      - name: overall_cardiovascular_risk
+        description: Combined cardiovascular risk assessment
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Low-Moderate', 'Moderate', 'High', 'Critical', 'Unknown']
+      - name: data_quality_flag
+        description: Flag for potentially invalid readings
+        tests:
+          - not_null
+
+  - name: stg_blood_sugar_readings
+    description: Blood glucose measurements with diabetes risk indicators
+    columns:
+      - name: reading_id
+        description: Unique identifier for each blood sugar reading
+        tests:
+          - not_null
+          - unique
+      - name: checkup_id
+        description: Foreign key to medical_checkups table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_medical_checkups')
+              field: checkup_id
+      - name: glucose_category
+        description: Glucose level categorization based on measurement type and ADA guidelines
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Hypoglycemia', 'Normal', 'Prediabetes', 'Diabetes', 'Elevated', 'High', 'Unknown']
+      - name: glucose_risk_level
+        description: Risk level assessment based on glucose readings
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Critical Low', 'Low', 'Normal', 'Moderate', 'High', 'Critical High', 'Unknown']
+      - name: measurement_type
+        description: Type of glucose measurement
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['fasting', 'random', 'post_meal', 'oral_glucose_tolerance']
+      - name: is_normal_range
+        description: Boolean indicating if reading is within normal range
+        tests:
+          - not_null
+      - name: indicates_diabetes
+        description: Boolean indicating if reading suggests diabetes
+        tests:
+          - not_null
+      - name: indicates_prediabetes
+        description: Boolean indicating if reading suggests prediabetes
+        tests:
+          - not_null
+
+  - name: stg_cholesterol_readings
+    description: Cholesterol panel measurements with cardiovascular risk assessment
+    columns:
+      - name: reading_id
+        description: Unique identifier for each cholesterol reading
+        tests:
+          - not_null
+          - unique
+      - name: checkup_id
+        description: Foreign key to medical_checkups table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_medical_checkups')
+              field: checkup_id
+      - name: total_cholesterol_category
+        description: Total cholesterol categorization per ATP III guidelines
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Desirable', 'Borderline High', 'High', 'Unknown']
+      - name: ldl_cholesterol_category
+        description: LDL cholesterol categorization
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Optimal', 'Near Optimal', 'Borderline High', 'High', 'Very High', 'Unknown']
+      - name: hdl_cholesterol_category
+        description: HDL cholesterol categorization
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Moderate', 'High', 'Unknown']
+      - name: triglycerides_category
+        description: Triglycerides categorization
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Normal', 'Borderline High', 'High', 'Very High', 'Unknown']
+      - name: cardiovascular_risk_level
+        description: Overall cardiovascular risk assessment
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Moderate', 'High', 'Very High']
+      - name: total_hdl_ratio
+        description: Total cholesterol to HDL ratio
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 15
+      - name: treatment_recommendation
+        description: Treatment recommendation based on lipid levels
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Continue Current Approach', 'Monitor', 'Lifestyle Changes', 'Consider Statin + Lifestyle', 'Statin Recommended']
+
+  - name: stg_sodium_readings
+    description: Sodium level measurements with clinical significance indicators
+    columns:
+      - name: reading_id
+        description: Unique identifier for each sodium reading
+        tests:
+          - not_null
+          - unique
+      - name: checkup_id
+        description: Foreign key to medical_checkups table
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_medical_checkups')
+              field: checkup_id
+      - name: sodium_category
+        description: Sodium level categorization (Hyponatremia, Normal, Hypernatremia)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Hyponatremia', 'Normal', 'Hypernatremia', 'Unknown']
+      - name: severity_category
+        description: Severity classification for abnormal sodium levels
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Severe Hyponatremia', 'Mild-Moderate Hyponatremia', 'Normal', 'Mild-Moderate Hypernatremia', 'Severe Hypernatremia', 'Unknown']
+      - name: clinical_risk_level
+        description: Clinical risk assessment based on sodium levels
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low', 'Moderate', 'High', 'Critical', 'Unknown']
+      - name: is_normal_range
+        description: Boolean indicating if sodium level is within normal range (135-145 mEq/L)
+        tests:
+          - not_null
+      - name: treatment_urgency
+        description: Treatment urgency recommendation
+        tests:
+          - not_null
+      - name: sodium_level
+        description: Sodium level in mEq/L
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 100
+              max_value: 200

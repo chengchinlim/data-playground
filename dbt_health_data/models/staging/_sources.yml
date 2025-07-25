@@ -1,0 +1,219 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw health data extracted via dlt from PostgreSQL
+    database: health_data
+    schema: raw
+    tables:
+      - name: customers
+        description: Customer demographics and profile information
+        columns:
+          - name: customer_id
+            description: Unique identifier for each customer
+            tests:
+              - not_null
+              - unique
+          - name: first_name
+            description: Customer's first name
+            tests:
+              - not_null
+          - name: last_name
+            description: Customer's last name
+            tests:
+              - not_null
+          - name: email
+            description: Customer's email address
+            tests:
+              - not_null
+              - unique
+          - name: date_of_birth
+            description: Customer's date of birth
+            tests:
+              - not_null
+          - name: gender
+            description: Customer's gender
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['Male', 'Female', 'Other', 'Prefer not to say']
+          - name: created_at
+            description: Timestamp when customer record was created
+          - name: updated_at
+            description: Timestamp when customer record was last updated
+
+      - name: medical_checkups
+        description: Medical checkup records and basic measurements
+        columns:
+          - name: checkup_id
+            description: Unique identifier for each medical checkup
+            tests:
+              - not_null
+              - unique
+          - name: customer_id
+            description: Foreign key to customers table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'customers')
+                  field: customer_id
+          - name: checkup_date
+            description: Date and time of the medical checkup
+            tests:
+              - not_null
+          - name: checkup_type
+            description: Type of medical checkup
+          - name: height_cm
+            description: Patient height in centimeters
+            tests:
+              - not_null
+          - name: weight_kg
+            description: Patient weight in kilograms
+            tests:
+              - not_null
+          - name: notes
+            description: Additional notes from the checkup
+          - name: created_at
+            description: Timestamp when checkup record was created
+
+      - name: blood_pressure_readings
+        description: Blood pressure measurement records
+        columns:
+          - name: reading_id
+            description: Unique identifier for each blood pressure reading
+            tests:
+              - not_null
+              - unique
+          - name: checkup_id
+            description: Foreign key to medical_checkups table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'medical_checkups')
+                  field: checkup_id
+          - name: systolic_pressure
+            description: Systolic blood pressure in mmHg
+            tests:
+              - not_null
+          - name: diastolic_pressure
+            description: Diastolic blood pressure in mmHg
+            tests:
+              - not_null
+          - name: heart_rate
+            description: Heart rate in beats per minute
+            tests:
+              - not_null
+          - name: measurement_time
+            description: Timestamp when measurement was taken
+            tests:
+              - not_null
+          - name: notes
+            description: Additional notes about the reading
+          - name: created_at
+            description: Timestamp when reading record was created
+
+      - name: blood_sugar_readings
+        description: Blood glucose measurement records
+        columns:
+          - name: reading_id
+            description: Unique identifier for each blood sugar reading
+            tests:
+              - not_null
+              - unique
+          - name: checkup_id
+            description: Foreign key to medical_checkups table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'medical_checkups')
+                  field: checkup_id
+          - name: glucose_level
+            description: Blood glucose level in mg/dL
+            tests:
+              - not_null
+          - name: measurement_type
+            description: Type of glucose measurement (fasting, random, etc.)
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['fasting', 'random', 'post_meal', 'oral_glucose_tolerance']
+          - name: measurement_time
+            description: Timestamp when measurement was taken
+            tests:
+              - not_null
+          - name: notes
+            description: Additional notes about the reading
+          - name: created_at
+            description: Timestamp when reading record was created
+
+      - name: cholesterol_readings
+        description: Cholesterol panel measurement records
+        columns:
+          - name: reading_id
+            description: Unique identifier for each cholesterol reading
+            tests:
+              - not_null
+              - unique
+          - name: checkup_id
+            description: Foreign key to medical_checkups table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'medical_checkups')
+                  field: checkup_id
+          - name: total_cholesterol
+            description: Total cholesterol level in mg/dL
+            tests:
+              - not_null
+          - name: ldl_cholesterol
+            description: LDL cholesterol level in mg/dL
+            tests:
+              - not_null
+          - name: hdl_cholesterol
+            description: HDL cholesterol level in mg/dL
+            tests:
+              - not_null
+          - name: triglycerides
+            description: Triglycerides level in mg/dL
+            tests:
+              - not_null
+          - name: fasting_hours
+            description: Number of hours patient fasted before test
+          - name: measurement_time
+            description: Timestamp when measurement was taken
+            tests:
+              - not_null
+          - name: notes
+            description: Additional notes about the reading
+          - name: created_at
+            description: Timestamp when reading record was created
+
+      - name: sodium_readings
+        description: Sodium level measurement records
+        columns:
+          - name: reading_id
+            description: Unique identifier for each sodium reading
+            tests:
+              - not_null
+              - unique
+          - name: checkup_id
+            description: Foreign key to medical_checkups table
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'medical_checkups')
+                  field: checkup_id
+          - name: sodium_level
+            description: Sodium level in mEq/L
+            tests:
+              - not_null
+          - name: test_type
+            description: Type of sodium test performed
+          - name: measurement_time
+            description: Timestamp when measurement was taken
+            tests:
+              - not_null
+          - name: notes
+            description: Additional notes about the reading
+          - name: created_at
+            description: Timestamp when reading record was created

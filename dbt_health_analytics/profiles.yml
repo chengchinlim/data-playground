@@ -1,0 +1,25 @@
+health_analytics:
+  outputs:
+    dev:
+      type: duckdb
+      path: '../data/health_analytics.duckdb'
+      # Configure DuckDB extensions
+      extensions:
+        - httpfs
+        - parquet
+      # Additional DuckDB settings
+      settings:
+        # Memory configuration
+        memory_limit: '1GB'
+        # Threading configuration  
+        threads: 4
+    prod:
+      type: duckdb
+      path: '../data/health_analytics_prod.duckdb'
+      extensions:
+        - httpfs
+        - parquet
+      settings:
+        memory_limit: '2GB'
+        threads: 8
+  target: dev
