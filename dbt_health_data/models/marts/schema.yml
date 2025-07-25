@@ -1,0 +1,288 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Enhanced customer dimension table that combines customer demographics with comprehensive health engagement 
+      metrics and risk indicators. This is the primary customer analytics table for business intelligence reporting.
+    columns:
+      - name: customer_id
+        description: Unique identifier for each customer
+        tests:
+          - not_null
+          - unique
+      - name: first_name
+        description: Customer's first name
+        tests:
+          - not_null
+      - name: last_name
+        description: Customer's last name
+        tests:
+          - not_null
+      - name: email
+        description: Customer's email address
+        tests:
+          - not_null
+          - unique
+      - name: date_of_birth
+        description: Customer's date of birth
+        tests:
+          - not_null
+      - name: gender
+        description: Customer's gender
+        tests:
+          - not_null
+      - name: age_years
+        description: Current age in years
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 150
+      - name: age_group
+        description: Age categorization for demographic analysis
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Minor', 'Young Adult', 'Middle Age', 'Pre-Senior', 'Senior', 'Unknown']
+      - name: total_checkups
+        description: Total number of medical checkups completed
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1000
+      - name: latest_checkup_date
+        description: Date of most recent medical checkup
+      - name: first_checkup_date
+        description: Date of first medical checkup
+      - name: engagement_status
+        description: Customer engagement level based on recency of last checkup
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Never', 'Recent', 'Moderate', 'Overdue', 'Inactive']
+      - name: avg_bmi
+        description: Average BMI across all checkups
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 80
+      - name: avg_bmi_category
+        description: BMI category based on average BMI
+        tests:
+          - accepted_values:
+              values: ['Underweight', 'Normal weight', 'Overweight', 'Obese', 'Unknown']
+      - name: has_high_health_risk
+        description: Flag indicating if customer has ever had high health risk assessment (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: has_hypertension_risk
+        description: Flag indicating if customer has hypertension risk indicators (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: has_high_cardiovascular_risk
+        description: Flag indicating if customer has high cardiovascular risk from BP readings (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: has_diabetes_indicators
+        description: Flag indicating if customer has diabetes indicators (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: has_prediabetes_indicators
+        description: Flag indicating if customer has prediabetes indicators (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: has_high_cholesterol_risk
+        description: Flag indicating if customer has high cholesterol risk (1=yes, 0=no)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: total_risk_flags
+        description: Sum of all health risk flags (0-6 scale)
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 6
+      - name: overall_risk_category
+        description: Overall health risk category based on total risk flags
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low Risk', 'Moderate Risk', 'High Risk', 'Unknown']
+      - name: days_as_patient
+        description: Number of days between first and latest checkup
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 36500 # ~100 years
+      - name: customer_created_at
+        description: Timestamp when customer record was created
+        tests:
+          - not_null
+
+  - name: clinical_risk_profile
+    description: >
+      Comprehensive clinical risk assessment combining all health metrics for each customer. 
+      This table provides a holistic view of patient health status with composite risk scoring 
+      and clinical recommendations for care management.
+    columns:
+      - name: customer_id
+        description: Unique identifier for each customer
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: age_years
+        description: Current age in years
+        tests:
+          - not_null
+      - name: gender
+        description: Customer's gender
+        tests:
+          - not_null
+      - name: latest_checkup_date
+        description: Date of most recent medical checkup
+      - name: bmi
+        description: Most recent BMI measurement
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 10
+              max_value: 80
+      - name: bmi_category
+        description: BMI classification category
+        tests:
+          - accepted_values:
+              values: ['Underweight', 'Normal weight', 'Overweight', 'Obesity Class I', 'Obesity Class II', 'Obesity Class III', 'Unknown']
+      - name: systolic_pressure
+        description: Most recent systolic blood pressure reading (mmHg)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 60
+              max_value: 300
+      - name: diastolic_pressure
+        description: Most recent diastolic blood pressure reading (mmHg)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 30
+              max_value: 200
+      - name: heart_rate
+        description: Most recent heart rate measurement (bpm)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 30
+              max_value: 220
+      - name: bp_category
+        description: Blood pressure category per AHA guidelines
+        tests:
+          - accepted_values:
+              values: ['Normal', 'Elevated', 'High Blood Pressure Stage 1', 'High Blood Pressure Stage 2', 'Hypertensive Crisis', 'Unknown']
+      - name: glucose_level
+        description: Most recent glucose level measurement (mg/dL)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 20
+              max_value: 600
+      - name: glucose_measurement_type
+        description: Type of glucose measurement
+        tests:
+          - accepted_values:
+              values: ['fasting', 'random', 'post_meal', 'oral_glucose_tolerance']
+      - name: glucose_category
+        description: Glucose level categorization
+        tests:
+          - accepted_values:
+              values: ['Hypoglycemia', 'Normal', 'Prediabetes', 'Diabetes', 'Elevated', 'High', 'Unknown']
+      - name: total_cholesterol
+        description: Most recent total cholesterol level (mg/dL)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 50
+              max_value: 600
+      - name: ldl_cholesterol
+        description: Most recent LDL cholesterol level (mg/dL)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 10
+              max_value: 400
+      - name: hdl_cholesterol
+        description: Most recent HDL cholesterol level (mg/dL)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 10
+              max_value: 150
+      - name: triglycerides
+        description: Most recent triglycerides level (mg/dL)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 30
+              max_value: 2000
+      - name: total_hdl_ratio
+        description: Total cholesterol to HDL ratio
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 15
+      - name: sodium_level
+        description: Most recent sodium level (mEq/L)
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 100
+              max_value: 200
+      - name: sodium_category
+        description: Sodium level categorization
+        tests:
+          - accepted_values:
+              values: ['Hyponatremia', 'Normal', 'Hypernatremia', 'Unknown']
+      - name: indicates_diabetes
+        description: Boolean flag indicating diabetes risk from glucose readings
+        tests:
+          - not_null
+      - name: indicates_prediabetes
+        description: Boolean flag indicating prediabetes risk from glucose readings
+        tests:
+          - not_null
+      - name: treatment_recommendation
+        description: Treatment recommendation based on cholesterol levels
+        tests:
+          - accepted_values:
+              values: ['Continue Current Approach', 'Monitor', 'Lifestyle Changes', 'Consider Statin + Lifestyle', 'Statin Recommended']
+      - name: composite_risk_score
+        description: Weighted composite risk score (0-3 scale) combining all health metrics
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 3
+      - name: overall_risk_category
+        description: Overall health risk category based on composite score
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Low Risk', 'Moderate Risk', 'High Risk', 'Critical Risk']
+      - name: primary_clinical_recommendation
+        description: Primary clinical recommendation based on highest risk factor
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Diabetes Management Required', 'Prediabetes Monitoring Required', 'Hypertension Management Required', 'Cholesterol Management Required', 'Electrolyte Management Required', 'Weight Management Recommended', 'Continue Routine Monitoring']
+      - name: care_priority
+        description: Care priority level for resource allocation
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Immediate Care', 'Priority Care', 'Standard Care', 'Routine Care']

@@ -11,7 +11,7 @@ transformed as (
         
         -- Customer details
         trim(first_name) as first_name,
-        trim(last_name) as first_name,
+        trim(last_name) as last_name,
         lower(trim(email)) as email,
         date_of_birth,
         gender,
